@@ -24,15 +24,15 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Direct Theos Environment
+      - name: Setup Theos Environment
         run: |
-          bash -c "$(curl -fsSL https://githubusercontent.com)"
+          git clone --recursive https://github.com/theos/theos.git $HOME/theos
           echo "THEOS=$HOME/theos" >> $GITHUB_ENV
 
       - name: Setup Pyzule
         run: |
           brew install bsdmake
-          git clone https://github.com
+          git clone https://github.com/asdfzxcvbn/pyzule.git
           cd pyzule && sudo ./install.sh
 
       - name: Prepare Spotify IPA
@@ -42,7 +42,7 @@ jobs:
 
       - name: Fetch and Inject EeveeSpotify
         run: |
-          curl -Lo eevee.deb https://github.com
+          curl -Lo eevee.deb https://github.com/SideloadLabs/EeveeSpotifyReincarnated/releases/latest/download/EeveeSpotify.deb
           pyzule -i ipa/spotify.ipa -o ipa/spotify.ipa -f eevee.deb
 
       - run: make release THEOS=$HOME/theos
@@ -60,7 +60,7 @@ jobs:
           BIN="spotifyglass-${{ github.run_id }}"
           echo "### filebin.net download" >> $GITHUB_STEP_SUMMARY
           for f in out/*.ipa; do
-            curl -fSs -X POST -H "Content-Type: application/octet-stream" --data-binary @"$f" "https://filebin.net(basename "$f")"
-            echo "- https://filebin.net(basename "$f")" >> $GITHUB_STEP_SUMMARY
+            curl -fSs -X POST -H "Content-Type: application/octet-stream" --data-binary @"$f" "https://filebin.net/$BIN/$(basename "$f")"
+            echo "- https://filebin.net/$BIN/$(basename "$f")" >> $GITHUB_STEP_SUMMARY
           done
           echo "- _filebin deletes bins after 6 days_" >> $GITHUB_STEP_SUMMARY
