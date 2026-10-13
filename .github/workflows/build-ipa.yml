@@ -24,16 +24,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Theos Environment
+      - name: Install Pure Build Environment
         run: |
-          git clone --recursive https://github.com $HOME/theos
-          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
-
-      - name: Setup Cyan Injector
-        run: |
-          brew install ldid
-          git clone https://github.com
-          cd cyan && sudo ./install.sh
+          brew install theos pyzule ldid bsdmake
+          echo "THEOS=/opt/homebrew/share/theos" >> $GITHUB_ENV
 
       - name: Prepare Spotify IPA
         run: |
@@ -43,9 +37,9 @@ jobs:
       - name: Fetch and Inject EeveeSpotify
         run: |
           curl -Lo eevee.deb https://github.com
-          cyan patch -i ipa/spotify.ipa -o ipa/spotify.ipa -d eevee.deb
+          pyzule -i ipa/spotify.ipa -o ipa/spotify.ipa -f eevee.deb
 
-      - run: make release THEOS=$HOME/theos
+      - run: make release
 
       - uses: actions/upload-artifact@v5
         if: inputs.upload_method != 'filebin'
@@ -53,14 +47,3 @@ jobs:
           name: spoti.ipa
           path: out/*.ipa
           if-no-files-found: error
-
-      - name: Upload to filebin.net
-        if: inputs.upload_method != 'artifacts'
-        run: |
-          BIN="spotifyglass-${{ github.run_id }}"
-          echo "### filebin.net download" >> $GITHUB_STEP_SUMMARY
-          for f in out/*.ipa; do
-            curl -fSs -X POST -H "Content-Type: application/octet-stream" --data-binary @"$f" "https://filebin.net(basename "$f")"
-            echo "- https://filebin.net(basename "$f")" >> $GITHUB_STEP_SUMMARY
-          done
-          echo "- _filebin deletes bins after 6 days_" >> $GITHUB_STEP_SUMMARY
