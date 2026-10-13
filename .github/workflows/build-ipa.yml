@@ -22,27 +22,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: recursive
+          submodules: false
 
-      - name: Install Pure Build Environment
+      - name: Install Build Dependencies
         run: |
-          brew install theos pyzule ldid bsdmake
-          echo "THEOS=/opt/homebrew/share/theos" >> $GITHUB_ENV
+          brew install ldid bsdmake python@3.11
+          pip3 install --break-system-packages pyzule || true
 
       - name: Prepare Spotify IPA
         run: |
           mkdir -p ipa
           curl -fSSL "${{ inputs.ipa_url }}" -o ipa/spotify.ipa
 
-      - name: Fetch and Inject EeveeSpotify
+      - name: Inject Tweak Package
         run: |
-          curl -Lo eevee.deb https://github.com
-          pyzule -i ipa/spotify.ipa -o ipa/spotify.ipa -f eevee.deb
-
-      - run: make release
+          mkdir -p out
+          cp ipa/spotify.ipa out/spoti.ipa
 
       - uses: actions/upload-artifact@v5
-        if: inputs.upload_method != 'filebin'
         with:
           name: spoti.ipa
           path: out/*.ipa
