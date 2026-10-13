@@ -25,7 +25,7 @@ jobs:
           submodules: recursive
 
       - name: Setup Theos
-        uses: logs64/theos-action@v1
+        uses: sigmotech/setup-theos@v1
 
       - name: Setup Pyzule
         run: |
