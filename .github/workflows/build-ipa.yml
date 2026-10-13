@@ -24,8 +24,10 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Setup Theos
-        uses: sigmotech/setup-theos@v1
+      - name: Install Direct Theos Environment
+        run: |
+          bash -c "$(curl -fsSL https://githubusercontent.com)"
+          echo "THEOS=$HOME/theos" >> $GITHUB_ENV
 
       - name: Setup Pyzule
         run: |
@@ -43,7 +45,7 @@ jobs:
           curl -Lo eevee.deb https://github.com
           pyzule -i ipa/spotify.ipa -o ipa/spotify.ipa -f eevee.deb
 
-      - run: make release
+      - run: make release THEOS=$HOME/theos
 
       - uses: actions/upload-artifact@v5
         if: inputs.upload_method != 'filebin'
