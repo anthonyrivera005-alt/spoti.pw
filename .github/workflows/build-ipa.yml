@@ -24,7 +24,7 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install Direct Theos Environment
+      - name: Setup Direct Theos Environment
         run: |
           bash -c "$(curl -fsSL https://githubusercontent.com)"
           echo "THEOS=$HOME/theos" >> $GITHUB_ENV
