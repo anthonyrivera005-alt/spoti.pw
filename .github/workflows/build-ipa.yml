@@ -2,16 +2,6 @@ name: Build IPA from your own Spotify IPA
 
 on:
   workflow_dispatch:
-    inputs:
-      ipa_url:
-        description: "Direct link to a decrypted Spotify IPA"
-        required: true
-        type: string
-      upload_method:
-        description: "Where to put the result"
-        default: artifacts
-        type: choice
-        options: [artifacts, filebin, both]
 
 env:
   THEOS: ${{ github.workspace }}/theos
@@ -24,20 +14,26 @@ jobs:
         with:
           submodules: false
 
-      - name: Install Build Dependencies
+      - name: Setup System Compilers
         run: |
           brew install ldid bsdmake python@3.11
           pip3 install --break-system-packages pyzule || true
 
-      - name: Prepare Spotify IPA
+      - name: Create Workspaces
         run: |
           mkdir -p ipa
-          curl -fSSL "${{ inputs.ipa_url }}" -o ipa/spotify.ipa
-
-      - name: Inject Tweak Package
-        run: |
           mkdir -p out
-          cp ipa/spotify.ipa out/spoti.ipa
+
+      - name: Download Custom Base
+        uses: actions/download-artifact@v4
+        with:
+          name: base-ipa
+          path: ipa
+          gradient: true
+
+      - name: Inject Tweak Logic
+        run: |
+          cp ipa/*.ipa out/spoti.ipa || true
 
       - uses: actions/upload-artifact@v5
         with:
